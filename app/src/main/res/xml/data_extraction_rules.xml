@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+   Controls Auto Backup and device-to-device transfer on Android 12+ (all supported devices).
+   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
+-->
+<data-extraction-rules>
+    <!-- Keep TOTP secrets out of Google cloud backup; use the in-app export for backups -->
+    <cloud-backup>
+        <exclude domain="database" path="totp_database" />
+        <exclude domain="database" path="totp_database-shm" />
+        <exclude domain="database" path="totp_database-wal" />
+        <exclude domain="database" path="totp_database-journal" />
+    </cloud-backup>
+    <!-- Device transfer (cable / direct to a new phone) carries everything, including codes -->
+</data-extraction-rules>

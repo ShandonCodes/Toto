@@ -1,0 +1,252 @@
+package codes.shandon.sctotp
+
+import android.os.Bundle
+import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.viewmodel.compose.viewModel
+import codes.shandon.sctotp.ui.BackupMode
+import codes.shandon.sctotp.ui.BackupPasswordDialog
+import codes.shandon.sctotp.ui.TOTPScreen
+import codes.shandon.sctotp.ui.theme.SCTOTPTheme
+import io.github.g00fy2.quickie.QRResult
+import io.github.g00fy2.quickie.ScanCustomCode
+import io.github.g00fy2.quickie.config.BarcodeFormat
+import io.github.g00fy2.quickie.config.ScannerConfig
+import kotlinx.coroutines.launch
+import java.security.GeneralSecurityException
+import java.time.LocalDate
+
+private const val TAG = "SC_TOTP"
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            SCTOTPTheme {
+                TOTPMainScreen()
+            }
+        }
+    }
+}
+
+@Composable
+fun TOTPMainScreen(totpViewModel: TOTPViewModel = viewModel()) {
+    val totpUiState by totpViewModel.uiState.collectAsState()
+    val activity = LocalActivity.current
+    val resources = LocalResources.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val appName = stringResource(R.string.app_name)
+
+    var busy by remember { mutableStateOf(false) }
+    var passwordDialog by remember { mutableStateOf<BackupMode?>(null) }
+    // Held between the password dialog and the file picker result
+    var pendingExportPassword by remember { mutableStateOf<CharArray?>(null) }
+    var pendingImportContents by remember { mutableStateOf<String?>(null) }
+
+    fun showMessage(message: String) {
+        scope.launch { snackbarHostState.showSnackbar(message) }
+    }
+
+    fun authenticate(title: String, onSuccess: () -> Unit) {
+        val currentActivity = activity ?: return
+        totpViewModel.authInProgress = true
+        AppLock.authenticate(currentActivity, title) { success ->
+            totpViewModel.authInProgress = false
+            if (success) onSuccess()
+        }
+    }
+
+    // [task] returns the snackbar message to show, or null for none
+    fun runBackupTask(task: suspend () -> String?) {
+        scope.launch {
+            busy = true
+            val message = try {
+                task()
+            } catch (e: InvalidBackupException) {
+                resources.getString(R.string.backup_invalid_file, appName)
+            } catch (e: GeneralSecurityException) {
+                // AEADBadTagException: wrong password or tampered file
+                resources.getString(R.string.backup_wrong_password)
+            } catch (e: Exception) {
+                Log.e(TAG, "Backup failed", e)
+                resources.getString(R.string.backup_failed)
+            } finally {
+                busy = false
+            }
+            message?.let { snackbarHostState.showSnackbar(it) }
+        }
+    }
+
+    val scannerConfig = remember {
+        ScannerConfig.build {
+            setBarcodeFormats(listOf(BarcodeFormat.FORMAT_QR_CODE))
+            setOverlayStringRes(R.string.scan_overlay)
+            setHapticSuccessFeedback(true)
+            setShowTorchToggle(true)
+            setShowCloseButton(true)
+            setKeepScreenOn(true)
+        }
+    }
+
+    val scannerListener = rememberLauncherForActivityResult(ScanCustomCode()) { result ->
+        when (result) {
+            is QRResult.QRSuccess -> {
+                if (!totpViewModel.addCode(result.content.rawValue)) {
+                    showMessage(resources.getString(R.string.invalid_qr))
+                }
+            }
+            is QRResult.QRMissingPermission -> showMessage(resources.getString(R.string.camera_permission))
+            is QRResult.QRError -> Log.e(TAG, "Scan failed", result.exception)
+            QRResult.QRUserCanceled -> Unit
+        }
+    }
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        // Null password means the user chose an unencrypted export
+        val password = pendingExportPassword
+        pendingExportPassword = null
+        if (uri != null) {
+            runBackupTask {
+                val count = totpViewModel.exportCodes(uri, password)
+                password?.fill(' ')
+                resources.getQuantityString(R.plurals.exported_codes, count, count)
+            }
+        } else {
+            password?.fill(' ')
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            runBackupTask {
+                val contents = totpViewModel.readBackup(uri)
+                if (BackupCrypto.isEncrypted(contents)) {
+                    pendingImportContents = contents
+                    passwordDialog = BackupMode.IMPORT
+                    null
+                } else {
+                    val count = totpViewModel.importCodes(contents, null)
+                    resources.getQuantityString(R.plurals.imported_codes, count, count)
+                }
+            }
+        }
+    }
+
+    TOTPScreen(
+        uiState = totpUiState,
+        snackbarHostState = snackbarHostState,
+        busy = busy,
+        onAddCode = {
+            totpViewModel.expectExternalActivity()
+            scannerListener.launch(scannerConfig)
+        },
+        onDeleteCode = { totpViewModel.deleteCode(it.secret) },
+        onExport = {
+            // Exporting reveals every secret, so re-confirm identity when the app is locked down
+            if (totpUiState.appLockEnabled) {
+                authenticate(resources.getString(R.string.export_prompt)) {
+                    passwordDialog = BackupMode.EXPORT
+                }
+            } else {
+                passwordDialog = BackupMode.EXPORT
+            }
+        },
+        onImport = {
+            totpViewModel.expectExternalActivity()
+            // Backups may come back from cloud storage with a generic MIME type
+            importLauncher.launch(arrayOf("application/json", "application/octet-stream", "text/plain"))
+        },
+        onToggleAppLock = {
+            when {
+                totpUiState.appLockEnabled ->
+                    authenticate(resources.getString(R.string.disable_lock_prompt)) {
+                        totpViewModel.setAppLockEnabled(false)
+                    }
+                activity == null || !AppLock.canAuthenticate(activity) ->
+                    showMessage(resources.getString(R.string.lock_unavailable))
+                else ->
+                    authenticate(resources.getString(R.string.enable_lock_prompt)) {
+                        totpViewModel.setAppLockEnabled(true)
+                    }
+            }
+        },
+        onUnlock = {
+            authenticate(resources.getString(R.string.unlock_prompt, appName)) { totpViewModel.unlock() }
+        }
+    )
+
+    passwordDialog?.let { mode ->
+        BackupPasswordDialog(
+            mode = mode,
+            onConfirm = { password ->
+                passwordDialog = null
+                when (mode) {
+                    BackupMode.EXPORT -> {
+                        pendingExportPassword = password
+                        totpViewModel.expectExternalActivity()
+                        exportLauncher.launch("${appName.lowercase()}-backup-${LocalDate.now()}.json")
+                    }
+                    BackupMode.IMPORT -> {
+                        val contents = pendingImportContents ?: return@BackupPasswordDialog
+                        pendingImportContents = null
+                        runBackupTask {
+                            val count = totpViewModel.importCodes(contents, password)
+                            password?.fill(' ')
+                            resources.getQuantityString(R.plurals.imported_codes, count, count)
+                        }
+                    }
+                }
+            },
+            onDismiss = {
+                passwordDialog = null
+                pendingImportContents = null
+            }
+        )
+    }
+
+    // Keep codes out of the recents thumbnail while app lock is on
+    LaunchedEffect(totpUiState.appLockEnabled) {
+        activity?.setRecentsScreenshotEnabled(!totpUiState.appLockEnabled)
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        totpViewModel.onAppStopped(activity?.isChangingConfigurations == true)
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        if (totpViewModel.onAppStarted()) {
+            authenticate(resources.getString(R.string.unlock_prompt, appName)) { totpViewModel.unlock() }
+        }
+    }
+
+    LifecycleResumeEffect(totpViewModel) {
+        totpViewModel.loopCodes()
+        onPauseOrDispose {
+            totpViewModel.pauseCodes()
+        }
+    }
+}
