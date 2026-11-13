@@ -1,4 +1,4 @@
-package codes.shandon.sctotp
+package codes.shandon.toto
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

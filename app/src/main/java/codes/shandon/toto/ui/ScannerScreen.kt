@@ -1,4 +1,4 @@
-package codes.shandon.sctotp.ui
+package codes.shandon.toto.ui
 
 import android.util.Log
 import android.util.Size as CameraSize
@@ -73,13 +73,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import codes.shandon.sctotp.QrDecoder
-import codes.shandon.sctotp.R
-import codes.shandon.sctotp.ui.theme.LocalWhimsyColors
+import codes.shandon.toto.QrDecoder
+import codes.shandon.toto.R
+import codes.shandon.toto.ui.theme.LocalWhimsyColors
 import kotlinx.coroutines.awaitCancellation
 import java.util.concurrent.Executors
 
-private const val TAG = "SC_TOTP"
+private const val TAG = "Toto"
 
 // Full-screen QR scanner: CameraX preview with ZXing decoding frames in the background.
 // Calls [onResult] once with the first QR code's text.

@@ -1,4 +1,4 @@
-package codes.shandon.sctotp
+package codes.shandon.toto
 
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap

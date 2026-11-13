@@ -1,4 +1,4 @@
-package codes.shandon.sctotp.ui
+package codes.shandon.toto.ui
 
 import android.content.ClipData
 import android.content.ClipDescription
@@ -87,10 +87,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
-import codes.shandon.sctotp.R
-import codes.shandon.sctotp.TOTPCode
-import codes.shandon.sctotp.TOTPUIState
-import codes.shandon.sctotp.ui.theme.SCTOTPTheme
+import codes.shandon.toto.R
+import codes.shandon.toto.TOTPCode
+import codes.shandon.toto.TOTPUIState
+import codes.shandon.toto.ui.theme.TotoTheme
 import kotlinx.coroutines.delay
 
 // Codes turn to the error color once this many seconds remain
@@ -767,7 +767,7 @@ private val previewCards = listOf(
 @Preview(showBackground = true)
 @Composable
 fun TOTPScreenPreview() {
-    SCTOTPTheme(darkTheme = true) {
+    TotoTheme(darkTheme = true) {
         TOTPScreen(
             uiState = TOTPUIState(cards = previewCards, isLoaded = true),
             snackbarHostState = remember { SnackbarHostState() },
@@ -791,7 +791,7 @@ fun TOTPScreenPreview() {
 @Preview(showBackground = true)
 @Composable
 fun TOTPScreenLightPreview() {
-    SCTOTPTheme(darkTheme = false) {
+    TotoTheme(darkTheme = false) {
         TOTPScreen(
             uiState = TOTPUIState(cards = previewCards, isLoaded = true),
             snackbarHostState = remember { SnackbarHostState() },
@@ -815,7 +815,7 @@ fun TOTPScreenLightPreview() {
 @Preview(showBackground = true)
 @Composable
 fun TOTPLockedPreview() {
-    SCTOTPTheme(darkTheme = true) {
+    TotoTheme(darkTheme = true) {
         TOTPScreen(
             uiState = TOTPUIState(isLoaded = true, appLockEnabled = true, isLocked = true),
             snackbarHostState = remember { SnackbarHostState() },
@@ -839,7 +839,7 @@ fun TOTPLockedPreview() {
 @Preview(showBackground = true)
 @Composable
 fun TOTPEmptyPreview() {
-    SCTOTPTheme(darkTheme = true) {
+    TotoTheme(darkTheme = true) {
         TOTPScreen(
             uiState = TOTPUIState(isLoaded = true),
             snackbarHostState = remember { SnackbarHostState() },

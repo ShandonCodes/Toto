@@ -1,4 +1,4 @@
-package codes.shandon.sctotp
+package codes.shandon.toto
 
 import org.json.JSONArray
 import org.json.JSONObject
@@ -18,6 +18,8 @@ class InvalidBackupException(message: String) : Exception(message)
 // or unencrypted, with that array stored directly:
 // { "format": "sctotp-backup", "version": 1, "accounts": [...] }
 object BackupCrypto {
+    // Predates the rename to Toto. Written into every backup file, so never change it or old
+    // backups stop importing.
     private const val FORMAT = "sctotp-backup"
     private const val VERSION = 1
     private const val KDF = "PBKDF2WithHmacSHA256"

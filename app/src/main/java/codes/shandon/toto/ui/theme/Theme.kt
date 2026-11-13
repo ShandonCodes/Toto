@@ -1,4 +1,4 @@
-package codes.shandon.sctotp.ui.theme
+package codes.shandon.toto.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -96,7 +96,7 @@ val LocalWhimsyColors = staticCompositionLocalOf {
 }
 
 @Composable
-fun SCTOTPTheme(
+fun TotoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {

@@ -1,4 +1,4 @@
-package codes.shandon.sctotp
+package codes.shandon.toto
 
 import android.Manifest
 import android.content.Intent
@@ -29,16 +29,16 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
-import codes.shandon.sctotp.ui.AddAccountDialog
-import codes.shandon.sctotp.ui.BackupMode
-import codes.shandon.sctotp.ui.BackupPasswordDialog
-import codes.shandon.sctotp.ui.TOTPScreen
-import codes.shandon.sctotp.ui.theme.SCTOTPTheme
+import codes.shandon.toto.ui.AddAccountDialog
+import codes.shandon.toto.ui.BackupMode
+import codes.shandon.toto.ui.BackupPasswordDialog
+import codes.shandon.toto.ui.TOTPScreen
+import codes.shandon.toto.ui.theme.TotoTheme
 import kotlinx.coroutines.launch
 import java.security.GeneralSecurityException
 import java.time.LocalDate
 
-private const val TAG = "SC_TOTP"
+private const val TAG = "Toto"
 class MainActivity : ComponentActivity() {
     private val totpViewModel: TOTPViewModel by viewModels()
 
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
         // Only on a fresh launch, so rotating doesn't re-offer the same link
         if (savedInstanceState == null) handleOtpAuthIntent(intent)
         setContent {
-            SCTOTPTheme {
+            TotoTheme {
                 TOTPMainScreen(totpViewModel)
             }
         }

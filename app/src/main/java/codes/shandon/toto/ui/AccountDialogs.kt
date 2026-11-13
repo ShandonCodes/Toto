@@ -1,4 +1,4 @@
-package codes.shandon.sctotp.ui
+package codes.shandon.toto.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
@@ -46,11 +46,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import codes.shandon.sctotp.Account
-import codes.shandon.sctotp.MAX_NAME_LENGTH
-import codes.shandon.sctotp.OtpAuth
-import codes.shandon.sctotp.R
-import codes.shandon.sctotp.TOTPCode
+import codes.shandon.toto.Account
+import codes.shandon.toto.MAX_NAME_LENGTH
+import codes.shandon.toto.OtpAuth
+import codes.shandon.toto.R
+import codes.shandon.toto.TOTPCode
 
 // "new code" menu: scan a QR code or type in a setup key
 @OptIn(ExperimentalMaterial3Api::class)

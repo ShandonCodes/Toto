@@ -1,4 +1,4 @@
-package codes.shandon.sctotp
+package codes.shandon.toto
 
 import android.content.Context
 import androidx.room3.ColumnInfo

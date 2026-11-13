@@ -1,4 +1,4 @@
-package codes.shandon.sctotp
+package codes.shandon.toto
 
 import android.app.Application
 import android.content.Context
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Date
 
-private const val TAG = "SC_TOTP"
+private const val TAG = "Toto"
 private const val PREF_APP_LOCK = "app_lock"
 private const val PREF_HIDE_CODES = "hide_codes"
 const val MAX_NAME_LENGTH = 40

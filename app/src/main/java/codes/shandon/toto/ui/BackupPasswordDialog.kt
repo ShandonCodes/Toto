@@ -1,4 +1,4 @@
-package codes.shandon.sctotp.ui
+package codes.shandon.toto.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,8 +25,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import codes.shandon.sctotp.R
-import codes.shandon.sctotp.ui.theme.SCTOTPTheme
+import codes.shandon.toto.R
+import codes.shandon.toto.ui.theme.TotoTheme
 
 private const val MIN_PASSWORD_LENGTH = 8
 
@@ -138,7 +138,7 @@ fun BackupPasswordDialog(
 @Preview
 @Composable
 fun BackupPasswordDialogPreview() {
-    SCTOTPTheme {
+    TotoTheme {
         BackupPasswordDialog(BackupMode.EXPORT, onConfirm = {}, onDismiss = {})
     }
 }

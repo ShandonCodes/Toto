@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SCTOTP"
+rootProject.name = "Toto"
 include(":app")
  

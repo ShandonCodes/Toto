@@ -1,11 +1,11 @@
-package codes.shandon.sctotp.ui.theme
+package codes.shandon.toto.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import codes.shandon.sctotp.R
+import codes.shandon.toto.R
 
 val PlexMono = FontFamily(
     Font(R.font.ibm_plex_mono_regular, FontWeight.Normal),

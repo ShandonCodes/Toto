@@ -1,4 +1,4 @@
-package codes.shandon.sctotp.ui.theme
+package codes.shandon.toto.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

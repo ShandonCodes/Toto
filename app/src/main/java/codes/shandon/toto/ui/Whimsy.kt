@@ -1,4 +1,4 @@
-package codes.shandon.sctotp.ui
+package codes.shandon.toto.ui
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
@@ -74,11 +74,11 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import codes.shandon.sctotp.R
-import codes.shandon.sctotp.TOTPRepository
-import codes.shandon.sctotp.ui.theme.AccountColors
-import codes.shandon.sctotp.ui.theme.LocalWhimsyColors
-import codes.shandon.sctotp.ui.theme.PlexMono
+import codes.shandon.toto.R
+import codes.shandon.toto.TOTPRepository
+import codes.shandon.toto.ui.theme.AccountColors
+import codes.shandon.toto.ui.theme.LocalWhimsyColors
+import codes.shandon.toto.ui.theme.PlexMono
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.sin

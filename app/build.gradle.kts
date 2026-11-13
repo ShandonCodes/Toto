@@ -2,10 +2,11 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.androidx.room3)
 }
 
 android {
-    namespace = "codes.shandon.sctotp"
+    namespace = "codes.shandon.toto"
     compileSdk {
         version = release(37)
     }
@@ -40,6 +41,12 @@ android {
         includeInApk = false
         includeInBundle = false
     }
+}
+
+// Exported database schemas are committed so future schema changes can be migrated (and tested)
+// against exactly what shipped
+room3 {
+    schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {

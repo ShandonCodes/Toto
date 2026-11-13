@@ -1,4 +1,4 @@
-package codes.shandon.sctotp
+package codes.shandon.toto
 
 import dev.turingcomplete.kotlinonetimepassword.GoogleAuthenticator
 import java.util.Date
