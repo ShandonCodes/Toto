@@ -1,6 +1,8 @@
 package codes.shandon.sctotp
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -18,9 +20,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -30,10 +34,6 @@ import codes.shandon.sctotp.ui.BackupMode
 import codes.shandon.sctotp.ui.BackupPasswordDialog
 import codes.shandon.sctotp.ui.TOTPScreen
 import codes.shandon.sctotp.ui.theme.SCTOTPTheme
-import io.github.g00fy2.quickie.QRResult
-import io.github.g00fy2.quickie.ScanCustomCode
-import io.github.g00fy2.quickie.config.BarcodeFormat
-import io.github.g00fy2.quickie.config.ScannerConfig
 import kotlinx.coroutines.launch
 import java.security.GeneralSecurityException
 import java.time.LocalDate
@@ -118,24 +118,25 @@ fun TOTPMainScreen(totpViewModel: TOTPViewModel = viewModel()) {
         }
     }
 
-    val scannerConfig = remember {
-        ScannerConfig.build {
-            setBarcodeFormats(listOf(BarcodeFormat.FORMAT_QR_CODE))
-            setOverlayStringRes(R.string.scan_overlay)
-            setHapticSuccessFeedback(true)
-            setShowTorchToggle(true)
-            setShowCloseButton(true)
-            setKeepScreenOn(true)
+    // In-app scanner (CameraX + ZXing). The permission prompt is a translucent system dialog, so it
+    // doesn't stop the activity and doesn't need expectExternalActivity().
+    var scanning by rememberSaveable { mutableStateOf(false) }
+    val cameraPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) scanning = true else showMessage(resources.getString(R.string.camera_permission))
+    }
+    fun startScan() {
+        val context = activity ?: return
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            scanning = true
+        } else {
+            cameraPermission.launch(Manifest.permission.CAMERA)
         }
     }
-
-    val scannerListener = rememberLauncherForActivityResult(ScanCustomCode()) { result ->
-        when (result) {
-            is QRResult.QRSuccess -> totpViewModel.addScannedCode(result.content.rawValue)
-            is QRResult.QRMissingPermission -> showMessage(resources.getString(R.string.camera_permission))
-            is QRResult.QRError -> Log.e(TAG, "Scan failed", result.exception)
-            QRResult.QRUserCanceled -> Unit
-        }
+    // Locking hides everything, scanner included
+    LaunchedEffect(totpUiState.isLocked) {
+        if (totpUiState.isLocked) scanning = false
     }
 
     val exportLauncher = rememberLauncherForActivityResult(
@@ -177,10 +178,17 @@ fun TOTPMainScreen(totpViewModel: TOTPViewModel = viewModel()) {
         uiState = totpUiState,
         snackbarHostState = snackbarHostState,
         busy = busy,
-        onAddCode = {
-            totpViewModel.expectExternalActivity()
-            scannerListener.launch(scannerConfig)
+        onAddCode = ::startScan,
+        scanning = scanning && !totpUiState.isLocked,
+        onScanResult = { raw ->
+            scanning = false
+            totpViewModel.addScannedCode(raw)
         },
+        onScannerError = {
+            scanning = false
+            showMessage(resources.getString(R.string.camera_unavailable))
+        },
+        onCloseScanner = { scanning = false },
         onAddManualCode = totpViewModel::addManualCode,
         onDeleteCode = { totpViewModel.deleteCode(it.secret) },
         onRenameCode = { card, name -> totpViewModel.renameCode(card.secret, name) },

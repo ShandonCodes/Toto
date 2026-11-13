@@ -11,7 +11,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "codes.shandon.sctotp"
+        applicationId = "codes.shandon.toto"
         minSdk = 35
         targetSdk = 37
         versionCode = 1
@@ -33,6 +33,12 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    // AGP otherwise embeds a Google-encrypted dependency report in the APK signing block,
+    // which F-Droid flags as an opaque blob
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 }
 
@@ -61,7 +67,11 @@ dependencies {
 
     implementation(libs.androidx.navigation.compose)
 
-    implementation(libs.quickie.bundled)
+    // QR scanning: CameraX for the camera, ZXing (Apache-2.0) to decode. No Play Services / ML Kit.
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.compose)
+    implementation(libs.zxing.core)
 
     // Room
 

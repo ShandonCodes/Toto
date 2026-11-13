@@ -1,0 +1,1 @@
+First release! Scan QR codes, open 2FA links from your camera app, or enter setup keys by hand. Includes search, rename, tap-to-reveal hidden codes, app lock with biometrics, and encrypted backup export/import. No internet permission.

@@ -1,0 +1,27 @@
+Toto is a tiny lock with one job: keeping your two-step verification codes safe, offline, and a little bit cute.
+
+<b>Add accounts your way</b>
+<ul>
+<li>Scan a QR code with the built-in scanner</li>
+<li>Pick Toto from "Open with" when your camera app scans a 2FA QR code (Toto always asks before adding it)</li>
+<li>Type in a setup key by hand</li>
+</ul>
+
+<b>Everyday use</b>
+<ul>
+<li>Tap a code to copy it. It's marked sensitive, so Android hides it in the clipboard preview</li>
+<li>Search by service or account name</li>
+<li>Rename any account</li>
+<li>Hide codes and account names until you tap to reveal them, for using your phone around other people</li>
+</ul>
+
+<b>Private by design</b>
+<ul>
+<li>No internet permission. Toto can't send your secrets anywhere</li>
+<li>App lock with fingerprint, face unlock, or your screen lock</li>
+<li>Your secrets are kept out of Android's cloud backup</li>
+<li>Export encrypted backups (AES-256-GCM with a password-derived key), or plain ones if you prefer, and import them on another device</li>
+</ul>
+
+<b>Good to know</b>
+Toto supports standard TOTP codes: 6 digits, refreshing every 30 seconds (SHA-1). That's what most sites use, including the ones that tell you to use Google Authenticator. Other variants are politely declined rather than saved with wrong codes.

@@ -107,6 +107,10 @@ fun TOTPScreen(
     uiState: TOTPUIState,
     snackbarHostState: SnackbarHostState,
     onAddCode: () -> Unit,
+    scanning: Boolean,
+    onScanResult: (String) -> Unit,
+    onScannerError: () -> Unit,
+    onCloseScanner: () -> Unit,
     onAddManualCode: (issuer: String, username: String, secret: String) -> Unit,
     onDeleteCode: (TOTPCode) -> Unit,
     onRenameCode: (TOTPCode, String) -> Unit,
@@ -214,6 +218,19 @@ fun TOTPScreen(
                 onLongClick = { pendingOptions = it }
             )
         }
+    }
+
+    // Drawn over everything else in this screen while active
+    if (scanning) {
+        ScannerScreen(
+            onResult = onScanResult,
+            onManual = {
+                onCloseScanner()
+                showManualEntry = true
+            },
+            onError = onScannerError,
+            onClose = onCloseScanner
+        )
     }
 
     if (showAddChoice) {
@@ -755,6 +772,10 @@ fun TOTPScreenPreview() {
             uiState = TOTPUIState(cards = previewCards, isLoaded = true),
             snackbarHostState = remember { SnackbarHostState() },
             onAddCode = {},
+            scanning = false,
+            onScanResult = {},
+            onScannerError = {},
+            onCloseScanner = {},
             onAddManualCode = { _, _, _ -> },
             onDeleteCode = {},
             onRenameCode = { _, _ -> },
@@ -775,6 +796,10 @@ fun TOTPScreenLightPreview() {
             uiState = TOTPUIState(cards = previewCards, isLoaded = true),
             snackbarHostState = remember { SnackbarHostState() },
             onAddCode = {},
+            scanning = false,
+            onScanResult = {},
+            onScannerError = {},
+            onCloseScanner = {},
             onAddManualCode = { _, _, _ -> },
             onDeleteCode = {},
             onRenameCode = { _, _ -> },
@@ -795,6 +820,10 @@ fun TOTPLockedPreview() {
             uiState = TOTPUIState(isLoaded = true, appLockEnabled = true, isLocked = true),
             snackbarHostState = remember { SnackbarHostState() },
             onAddCode = {},
+            scanning = false,
+            onScanResult = {},
+            onScannerError = {},
+            onCloseScanner = {},
             onAddManualCode = { _, _, _ -> },
             onDeleteCode = {},
             onRenameCode = { _, _ -> },
@@ -815,6 +844,10 @@ fun TOTPEmptyPreview() {
             uiState = TOTPUIState(isLoaded = true),
             snackbarHostState = remember { SnackbarHostState() },
             onAddCode = {},
+            scanning = false,
+            onScanResult = {},
+            onScannerError = {},
+            onCloseScanner = {},
             onAddManualCode = { _, _, _ -> },
             onDeleteCode = {},
             onRenameCode = { _, _ -> },

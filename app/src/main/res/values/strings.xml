@@ -30,6 +30,10 @@
         <item quantity="other">that looks too short (at least %1$d characters)</item>
     </plurals>
     <string name="camera_permission">toto needs the camera to scan qr codes</string>
+    <string name="camera_unavailable">toto couldn\'t open the camera</string>
+    <string name="close_scanner">Close scanner</string>
+    <string name="light_on">light: on</string>
+    <string name="light_off">light: off</string>
     <string name="copied">copied ✓</string>
     <string name="search_placeholder">search codes…</string>
     <string name="clear_search">Clear search</string>
