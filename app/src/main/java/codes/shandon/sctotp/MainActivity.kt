@@ -1,5 +1,6 @@
 package codes.shandon.sctotp
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -7,6 +8,7 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -23,6 +25,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
+import codes.shandon.sctotp.ui.AddAccountDialog
 import codes.shandon.sctotp.ui.BackupMode
 import codes.shandon.sctotp.ui.BackupPasswordDialog
 import codes.shandon.sctotp.ui.TOTPScreen
@@ -37,13 +40,31 @@ import java.time.LocalDate
 
 private const val TAG = "SC_TOTP"
 class MainActivity : ComponentActivity() {
+    private val totpViewModel: TOTPViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        // Only on a fresh launch, so rotating doesn't re-offer the same link
+        if (savedInstanceState == null) handleOtpAuthIntent(intent)
         setContent {
             SCTOTPTheme {
-                TOTPMainScreen()
+                TOTPMainScreen(totpViewModel)
             }
+        }
+    }
+
+    // singleTask: a link opened while we're running arrives here instead of a second instance
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleOtpAuthIntent(intent)
+    }
+
+    // "Open with" from the camera app, Lens, or a browser for otpauth:// links
+    private fun handleOtpAuthIntent(intent: Intent?) {
+        if (intent?.action == Intent.ACTION_VIEW && intent.data?.scheme.equals("otpauth", ignoreCase = true)) {
+            totpViewModel.onOtpAuthLink(intent.data.toString())
         }
     }
 }
@@ -110,11 +131,7 @@ fun TOTPMainScreen(totpViewModel: TOTPViewModel = viewModel()) {
 
     val scannerListener = rememberLauncherForActivityResult(ScanCustomCode()) { result ->
         when (result) {
-            is QRResult.QRSuccess -> {
-                if (!totpViewModel.addCode(result.content.rawValue)) {
-                    showMessage(resources.getString(R.string.invalid_qr))
-                }
-            }
+            is QRResult.QRSuccess -> totpViewModel.addScannedCode(result.content.rawValue)
             is QRResult.QRMissingPermission -> showMessage(resources.getString(R.string.camera_permission))
             is QRResult.QRError -> Log.e(TAG, "Scan failed", result.exception)
             QRResult.QRUserCanceled -> Unit
@@ -164,7 +181,9 @@ fun TOTPMainScreen(totpViewModel: TOTPViewModel = viewModel()) {
             totpViewModel.expectExternalActivity()
             scannerListener.launch(scannerConfig)
         },
+        onAddManualCode = totpViewModel::addManualCode,
         onDeleteCode = { totpViewModel.deleteCode(it.secret) },
+        onRenameCode = { card, name -> totpViewModel.renameCode(card.secret, name) },
         onExport = {
             // Exporting reveals every secret, so re-confirm identity when the app is locked down
             if (totpUiState.appLockEnabled) {
@@ -180,6 +199,7 @@ fun TOTPMainScreen(totpViewModel: TOTPViewModel = viewModel()) {
             // Backups may come back from cloud storage with a generic MIME type
             importLauncher.launch(arrayOf("application/json", "application/octet-stream", "text/plain"))
         },
+        onToggleHideCodes = { totpViewModel.setHideCodes(!totpUiState.hideCodes) },
         onToggleAppLock = {
             when {
                 totpUiState.appLockEnabled ->
@@ -228,9 +248,27 @@ fun TOTPMainScreen(totpViewModel: TOTPViewModel = viewModel()) {
         )
     }
 
-    // Keep codes out of the recents thumbnail while app lock is on
-    LaunchedEffect(totpUiState.appLockEnabled) {
-        activity?.setRecentsScreenshotEnabled(!totpUiState.appLockEnabled)
+    // Accounts from "Open with" wait for confirmation, and for the app to be unlocked first
+    totpUiState.pendingLinkAccount?.takeIf { !totpUiState.isLocked }?.let { account ->
+        AddAccountDialog(
+            account = account,
+            onConfirm = totpViewModel::confirmLinkAccount,
+            onDismiss = totpViewModel::dismissLinkAccount
+        )
+    }
+
+    // One-off messages from the ViewModel (scan results, duplicates, ...). The snackbar runs in the
+    // screen's scope: clearing the message changes this effect's key, which would cancel it here.
+    LaunchedEffect(totpUiState.message) {
+        val message = totpUiState.message ?: return@LaunchedEffect
+        showMessage(resources.getString(message))
+        totpViewModel.messageShown()
+    }
+
+    // Keep codes out of the recents thumbnail while app lock or code hiding is on
+    val protectRecents = totpUiState.appLockEnabled || totpUiState.hideCodes
+    LaunchedEffect(protectRecents) {
+        activity?.setRecentsScreenshotEnabled(!protectRecents)
     }
 
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {

@@ -2,33 +2,36 @@ package codes.shandon.sctotp.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
+import codes.shandon.sctotp.R
 
-// Set of Material typography styles to start with
-val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    )
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-    */
+val PlexMono = FontFamily(
+    Font(R.font.ibm_plex_mono_regular, FontWeight.Normal),
+    Font(R.font.ibm_plex_mono_medium, FontWeight.Medium),
+    Font(R.font.ibm_plex_mono_semibold, FontWeight.SemiBold),
+    Font(R.font.ibm_plex_mono_bold, FontWeight.Bold)
 )
+
+// Everything in IBM Plex Mono, keeping Material's sizes
+val Typography = Typography().run {
+    fun TextStyle.mono() = copy(fontFamily = PlexMono)
+    Typography(
+        displayLarge = displayLarge.mono(),
+        displayMedium = displayMedium.mono(),
+        displaySmall = displaySmall.mono(),
+        headlineLarge = headlineLarge.mono(),
+        headlineMedium = headlineMedium.mono().copy(fontWeight = FontWeight.Bold),
+        headlineSmall = headlineSmall.mono().copy(fontWeight = FontWeight.SemiBold),
+        titleLarge = titleLarge.mono().copy(fontWeight = FontWeight.SemiBold),
+        titleMedium = titleMedium.mono().copy(fontWeight = FontWeight.SemiBold),
+        titleSmall = titleSmall.mono(),
+        bodyLarge = bodyLarge.mono(),
+        bodyMedium = bodyMedium.mono(),
+        bodySmall = bodySmall.mono(),
+        labelLarge = labelLarge.mono().copy(fontWeight = FontWeight.SemiBold),
+        labelMedium = labelMedium.mono().copy(fontWeight = FontWeight.Bold),
+        labelSmall = labelSmall.mono()
+    )
+}

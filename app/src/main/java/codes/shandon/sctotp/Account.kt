@@ -53,6 +53,9 @@ interface AccountDao {
     )
     suspend fun findBySecret(secret: String): Account?
 
+    @Query("UPDATE account SET issuer = :issuer WHERE secret = :secret")
+    suspend fun updateIssuer(secret: String, issuer: String)
+
     @Insert
     suspend fun insertAll(vararg accounts: Account)
 

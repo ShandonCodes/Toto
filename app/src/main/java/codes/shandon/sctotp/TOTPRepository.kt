@@ -13,6 +13,8 @@ class AccountRepository(private val accountDao: AccountDao) {
     suspend fun getAllSecrets(): List<String> = accountDao.getAllSecrets()
 
     suspend fun getAllAccounts(): List<Account> = accountDao.getAll()
+
+    suspend fun renameAccount(secret: String, issuer: String) = accountDao.updateIssuer(secret, issuer)
 }
 
 

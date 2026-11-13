@@ -4,7 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.core.net.toUri
+import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +21,8 @@ import java.util.Date
 
 private const val TAG = "SC_TOTP"
 private const val PREF_APP_LOCK = "app_lock"
+private const val PREF_HIDE_CODES = "hide_codes"
+const val MAX_NAME_LENGTH = 40
 
 class TOTPViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -28,7 +30,11 @@ class TOTPViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(
         prefs.getBoolean(PREF_APP_LOCK, false).let { lockEnabled ->
-            TOTPUIState(appLockEnabled = lockEnabled, isLocked = lockEnabled)
+            TOTPUIState(
+                appLockEnabled = lockEnabled,
+                isLocked = lockEnabled,
+                hideCodes = prefs.getBoolean(PREF_HIDE_CODES, false)
+            )
         }
     )
     val uiState: StateFlow<TOTPUIState> = _uiState.asStateFlow()
@@ -47,32 +53,74 @@ class TOTPViewModel(application: Application) : AndroidViewModel(application) {
     var authInProgress = false
     private var externalActivityPending = false
 
-    // Parses an otpauth://totp/Issuer:username?secret=...&issuer=... URI and stores the account.
-    // Returns false if the scanned value isn't a usable otpauth URI.
-    fun addCode(scannedCode: String?): Boolean {
-        if (scannedCode == null) return false
-        val uri = scannedCode.toUri()
-        if (uri.scheme != "otpauth") {
-            Log.w(TAG, "Scanned QR code is not an otpauth URI")
-            return false
+    // From the in-app scanner: save straight away, since the user just aimed the camera at it
+    fun addScannedCode(raw: String?) {
+        when (val result = OtpAuth.parse(raw)) {
+            is OtpAuthResult.Valid -> saveAccount(result.account)
+            OtpAuthResult.Invalid -> showMessage(R.string.invalid_qr)
+            OtpAuthResult.Unsupported -> showMessage(R.string.unsupported_code)
         }
+    }
 
-        val path = uri.path?.trimStart('/')?.split(":").orEmpty()
-        val username = path.lastOrNull().orEmpty()
-        // The label is either "Issuer:username" or just "username"
-        val issuer = uri.getQueryParameter("issuer") ?: path.takeIf { it.size > 1 }?.first() ?: username
-        val secret = uri.getQueryParameter("secret")
+    // Typed in by hand from the setup key the site shows under "can't scan the code?"
+    fun addManualCode(issuer: String, username: String, secret: String) {
+        when (val result = OtpAuth.manual(issuer, username, secret)) {
+            is OtpAuthResult.Valid -> saveAccount(result.account)
+            else -> showMessage(R.string.setup_key_invalid)
+        }
+    }
 
-        if (issuer == null || secret == null) return false
+    // From an "Open with" otpauth:// link. Any app or web page can send one, so hold the account
+    // until the user confirms it rather than saving silently.
+    fun onOtpAuthLink(raw: String?) {
+        when (val result = OtpAuth.parse(raw)) {
+            is OtpAuthResult.Valid -> _uiState.update { it.copy(pendingLinkAccount = result.account) }
+            OtpAuthResult.Invalid -> showMessage(R.string.invalid_qr)
+            OtpAuthResult.Unsupported -> showMessage(R.string.unsupported_code)
+        }
+    }
+
+    fun confirmLinkAccount() {
+        val account = _uiState.value.pendingLinkAccount ?: return
+        _uiState.update { it.copy(pendingLinkAccount = null) }
+        saveAccount(account)
+    }
+
+    fun dismissLinkAccount() {
+        _uiState.update { it.copy(pendingLinkAccount = null) }
+    }
+
+    private fun saveAccount(account: Account) {
         viewModelScope.launch {
-            if (accountRepo.getAccountBySecret(secret) == null) {
-                Log.i(TAG, "Adding code...")
-                accountRepo.insertAccount(Account(issuer = issuer, username = username, secret = secret))
-                loadSecrets()
-                publishCards()
+            if (accountRepo.getAccountBySecret(account.secret) != null) {
+                showMessage(R.string.already_added)
+                return@launch
             }
+            Log.i(TAG, "Adding code...")
+            accountRepo.insertAccount(account)
+            loadSecrets()
+            publishCards()
+            showMessage(R.string.code_added)
         }
-        return true
+    }
+
+    // Replaces the issuer shown in the card's pill. Codes only depend on the secret, so this is safe.
+    fun renameCode(secret: String, newName: String) {
+        val name = newName.trim().take(MAX_NAME_LENGTH)
+        if (name.isEmpty()) return
+        viewModelScope.launch {
+            accountRepo.renameAccount(secret, name)
+            accounts = accounts.map { if (it.secret == secret) it.copy(issuer = name) else it }
+            publishCards()
+        }
+    }
+
+    private fun showMessage(@StringRes message: Int) {
+        _uiState.update { it.copy(message = message) }
+    }
+
+    fun messageShown() {
+        _uiState.update { it.copy(message = null) }
     }
 
     fun deleteCode(secret: String) {
@@ -87,6 +135,11 @@ class TOTPViewModel(application: Application) : AndroidViewModel(application) {
     fun setAppLockEnabled(enabled: Boolean) {
         prefs.edit().putBoolean(PREF_APP_LOCK, enabled).apply()
         _uiState.update { it.copy(appLockEnabled = enabled, isLocked = false) }
+    }
+
+    fun setHideCodes(hide: Boolean) {
+        prefs.edit().putBoolean(PREF_HIDE_CODES, hide).apply()
+        _uiState.update { it.copy(hideCodes = hide) }
     }
 
     fun unlock() {
@@ -214,5 +267,11 @@ data class TOTPUIState(
     val cards: List<TOTPCode> = emptyList(),
     val isLoaded: Boolean = false,
     val appLockEnabled: Boolean = false,
-    val isLocked: Boolean = false
+    val isLocked: Boolean = false,
+    // Codes and usernames render redacted until a card is tapped
+    val hideCodes: Boolean = false,
+    // Account from an "Open with" link, waiting for the user to confirm
+    val pendingLinkAccount: Account? = null,
+    // One-off snackbar message (string resource), cleared once shown
+    @param:StringRes val message: Int? = null
 )

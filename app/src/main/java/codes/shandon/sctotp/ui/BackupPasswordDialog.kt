@@ -56,6 +56,8 @@ fun BackupPasswordDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = MaterialTheme.shapes.extraLarge,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         icon = {
             Icon(
                 painterResource(if (isExport) R.drawable.upload else R.drawable.download),

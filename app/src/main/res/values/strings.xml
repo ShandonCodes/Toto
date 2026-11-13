@@ -1,16 +1,50 @@
 <resources>
-    <string name="app_name">SCTOTP</string>
-    <string name="add_code">Add code</string>
-    <string name="scan_qr_code">Scan a QR code</string>
-    <string name="scan_overlay">Scan the QR code shown by the service</string>
-    <string name="empty_title">No codes yet</string>
-    <string name="empty_body">Add an account by scanning the QR code from its two-step verification settings.</string>
-    <string name="invalid_qr">That QR code isn\'t an authenticator code</string>
-    <string name="camera_permission">Camera access is needed to scan QR codes</string>
-    <string name="remove_title">Remove account?</string>
+    <string name="app_name">Toto</string>
+    <string name="tagline">~ one-time codes, many-time smiles ~</string>
+    <string name="add_code">new code</string>
+    <string name="scan_qr_code">scan a qr code</string>
+    <string name="scan_overlay">point at the qr code in the site\'s 2fa settings</string>
+    <string name="empty_title">nothing to guard yet</string>
+    <string name="empty_body">scan a 2fa qr code and toto will keep it safe and sound.</string>
+    <string name="invalid_qr">hmm, that qr code isn\'t a 2fa code</string>
+    <string name="unsupported_code">toto only does standard 6-digit, 30-second codes (for now)</string>
+    <string name="already_added">toto already has this one</string>
+    <string name="code_added">added a new code ✨</string>
+    <string name="rename">rename</string>
+    <string name="rename_title">rename account</string>
+    <string name="rename_body">pick a name for the pill. your codes won\'t change.</string>
+    <string name="name">name</string>
+    <string name="save">save</string>
+    <string name="add_account_title">add this account?</string>
+    <string name="add_account_body">Only add accounts you\'re setting up two-step verification for right now. Links from other apps or websites can\'t be trusted on their own.</string>
+    <string name="add">add</string>
+    <string name="enter_setup_key">enter a setup key</string>
+    <string name="or_enter_setup_key">or enter a setup key</string>
+    <string name="manual_body">Find the setup key on the site\'s two-step verification page, usually under \"can\'t scan the code?\"</string>
+    <string name="service">service</string>
+    <string name="account_optional">account (optional)</string>
+    <string name="setup_key">setup key</string>
+    <string name="setup_key_invalid">setup keys only use letters a–z and numbers 2–7</string>
+    <plurals name="setup_key_short">
+        <item quantity="one">that looks too short (at least %1$d character)</item>
+        <item quantity="other">that looks too short (at least %1$d characters)</item>
+    </plurals>
+    <string name="camera_permission">toto needs the camera to scan qr codes</string>
+    <string name="copied">copied ✓</string>
+    <string name="search_placeholder">search codes…</string>
+    <string name="clear_search">Clear search</string>
+    <string name="no_matches">toto looked everywhere. nothing matches “%1$s”.</string>
+    <string name="help_tap">tap</string>
+    <string name="help_copy">copy</string>
+    <string name="help_hold">hold</string>
+    <string name="help_remove">rename/remove</string>
+    <string name="help_reveal">reveal → copy</string>
+    <string name="hidden_code">Hidden code. Tap to reveal.</string>
+    <string name="hidden_account">Hidden account</string>
+    <string name="remove_title">remove account?</string>
     <string name="remove_body">Removing %1$s won\'t turn off two-step verification. Make sure you have another way to sign in first.</string>
-    <string name="remove">Remove</string>
-    <string name="cancel">Cancel</string>
+    <string name="remove">remove</string>
+    <string name="cancel">never mind</string>
     <plurals name="seconds_left">
         <item quantity="one">%1$d second left</item>
         <item quantity="other">%1$d seconds left</item>
@@ -18,46 +52,47 @@
 
     <!-- Menu -->
     <string name="more_options">More options</string>
-    <string name="export_codes">Export codes</string>
-    <string name="import_codes">Import codes</string>
-    <string name="app_lock">App lock</string>
+    <string name="export_codes">export codes</string>
+    <string name="import_codes">import codes</string>
+    <string name="app_lock">app lock</string>
+    <string name="hide_codes">hide codes</string>
 
     <!-- App lock -->
-    <string name="locked_title">%1$s is locked</string>
-    <string name="locked_body">Unlock with your fingerprint, face, or screen lock to see your codes.</string>
-    <string name="unlock">Unlock</string>
+    <string name="locked_title">shh… toto is napping</string>
+    <string name="locked_body">wake toto with your fingerprint, face, or screen lock to see your codes.</string>
+    <string name="unlock">wake up</string>
     <string name="unlock_prompt">Unlock %1$s</string>
     <string name="enable_lock_prompt">Turn on app lock</string>
     <string name="disable_lock_prompt">Turn off app lock</string>
     <string name="export_prompt">Confirm it\'s you to export codes</string>
-    <string name="lock_unavailable">Set up a fingerprint, face unlock, or screen lock first</string>
+    <string name="lock_unavailable">set up a fingerprint, face unlock, or screen lock first</string>
 
     <!-- Backup -->
-    <string name="export_title">Protect backup</string>
+    <string name="export_title">pack a backup</string>
     <string name="export_body">Add a password to encrypt this backup. You\'ll need it to import your codes, and it can\'t be recovered if you forget it.</string>
-    <string name="password_optional">Password (optional)</string>
+    <string name="password_optional">password (optional)</string>
     <string name="export_unencrypted_warning">Without a password, anyone who gets this file can copy all of your codes.</string>
-    <string name="export_without_password">Export without password</string>
-    <string name="import_title">Backup password</string>
+    <string name="export_without_password">export without password</string>
+    <string name="import_title">backup password</string>
     <string name="import_body">Enter the password you used when you exported this backup.</string>
-    <string name="password">Password</string>
-    <string name="confirm_password">Confirm password</string>
+    <string name="password">password</string>
+    <string name="confirm_password">confirm password</string>
     <plurals name="password_too_short">
-        <item quantity="one">Use at least %1$d character</item>
-        <item quantity="other">Use at least %1$d characters</item>
+        <item quantity="one">use at least %1$d character</item>
+        <item quantity="other">use at least %1$d characters</item>
     </plurals>
-    <string name="password_mismatch">Passwords don\'t match</string>
-    <string name="next">Next</string>
-    <string name="import_action">Import</string>
-    <string name="backup_wrong_password">Wrong password, or the backup file is damaged</string>
-    <string name="backup_invalid_file">That file isn\'t a %1$s backup</string>
-    <string name="backup_failed">Couldn\'t access that file</string>
+    <string name="password_mismatch">passwords don\'t match</string>
+    <string name="next">next</string>
+    <string name="import_action">import</string>
+    <string name="backup_wrong_password">wrong password (or the file got scrambled)</string>
+    <string name="backup_invalid_file">that file isn\'t a %1$s backup</string>
+    <string name="backup_failed">couldn\'t open that file</string>
     <plurals name="exported_codes">
-        <item quantity="one">Exported %d code</item>
-        <item quantity="other">Exported %d codes</item>
+        <item quantity="one">exported %d code ✨</item>
+        <item quantity="other">exported %d codes ✨</item>
     </plurals>
     <plurals name="imported_codes">
-        <item quantity="one">Imported %d new code</item>
-        <item quantity="other">Imported %d new codes</item>
+        <item quantity="one">imported %d new code ✨</item>
+        <item quantity="other">imported %d new codes ✨</item>
     </plurals>
 </resources>

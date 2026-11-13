@@ -18,11 +18,22 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.SCTOTP"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Shows Toto in "Open with" when the camera app or Lens scans a 2FA QR code -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="otpauth" />
+                <data android:host="totp" />
             </intent-filter>
         </activity>
     </application>
