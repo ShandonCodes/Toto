@@ -87,7 +87,7 @@ Toto generates standard **TOTP** codes ([RFC 6238](https://www.rfc-editor.org/rf
 ### Build
 
 ```sh
-git clone <this repository>
+git clone git@github.com:ShandonCodes/Toto.git
 cd <repository folder>
 
 # Debug APK: app/build/outputs/apk/debug/app-debug.apk

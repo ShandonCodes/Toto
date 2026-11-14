@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Signed release APKs (scripts/release.sh)
+/release

@@ -1,4 +1,4 @@
-Toto is a tiny lock with one job: keeping your two-step verification codes safe, offline, and a little bit cute.
+Toto is a tiny lock with one job: Keep your two-step verification codes safe and offline all while being a little bit cute.
 
 <b>Add accounts your way</b>
 <ul>
