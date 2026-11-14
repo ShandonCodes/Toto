@@ -109,7 +109,8 @@ fun TOTPMainScreen(totpViewModel: TOTPViewModel = viewModel()) {
                 // AEADBadTagException: wrong password or tampered file
                 resources.getString(R.string.backup_wrong_password)
             } catch (e: Exception) {
-                Log.e(TAG, "Backup failed", e)
+                // Type only: parser messages can quote backup contents, which may include secrets
+                Log.e(TAG, "Backup failed: ${e.javaClass.simpleName}")
                 resources.getString(R.string.backup_failed)
             } finally {
                 busy = false
