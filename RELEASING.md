@@ -58,10 +58,28 @@ F-Droid ships **our** signed APK. That means:
 5. **Publish:** create a GitHub release for `vX.Y` and attach the APK, named exactly
    `Toto-X.Y.apk` (the F-Droid metadata's `Binaries` URL expects that name).
 
+> **Never rewrite a release commit after building its APK** (no squash, amend, or rebase of a
+> tagged commit). The APK embeds the commit hash in `META-INF/version-control-info.textproto`, so
+> F-Droid's rebuild of a rewritten commit can't match the APK you published. If it happens, rebuild
+> from the final tag with `scripts/release.sh` and replace the release asset.
+
 F-Droid checks for new tags daily, opens its own update for the new version, rebuilds it, compares
 it with the APK from step 5, and publishes our signed APK if they match.
 
 ## If F-Droid reports a mismatch
+
+If the log shows a signature `digest mismatch` but the content diff is empty, the APK was signed
+with the wrong options. The signed APK must be F-Droid's exact ZIP plus a v2/v3 signing block, so
+always sign with `scripts/release.sh`. If you sign by hand, use exactly:
+
+```sh
+apksigner sign --ks ~/keys/toto-release.jks --ks-key-alias toto \
+  --v1-signing-enabled false --v2-signing-enabled true --v3-signing-enabled true \
+  --alignment-preserved true --out Toto-X.Y.apk <unsigned F-Droid build>
+```
+
+apksigner's defaults add v1 (JAR) signature files to `META-INF/`, which shifts every entry in the
+ZIP and fails verification.
 
 The build log on the app's F-Droid page shows the differences. Usual causes are a changed build
 environment (a new buildserver image, so rebuild with `docker pull` first) or something

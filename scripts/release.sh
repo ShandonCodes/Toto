@@ -51,6 +51,11 @@ docker run --rm -u vagrant --entrypoint /bin/bash \
         export PATH=\"\$HOME/fdroidserver:\$PATH\" PYTHONPATH=\"\$HOME/fdroidserver\"
         export JAVA_HOME=\$(java -XshowSettings:properties -version 2>&1 >/dev/null | grep java.home | awk -F= '{print \$2}' | tr -d ' ')
         cd /build
+        # Build without Binaries: this build *is* the reference, so there's nothing to verify
+        # against yet (and a failed verification would delete the APK). Restored afterwards.
+        cp metadata/$APP_ID.yml /tmp/meta.yml
+        trap 'cp /tmp/meta.yml /build/metadata/$APP_ID.yml' EXIT
+        sed -i '/^Binaries:/d' metadata/$APP_ID.yml
         fdroid build --verbose $APP_ID:$VERCODE"
 
 UNSIGNED="$FDROIDDATA/unsigned/${APP_ID}_${VERCODE}.apk"
@@ -60,7 +65,13 @@ OUT_DIR="$REPO_ROOT/release"
 OUT="$OUT_DIR/Toto-$VERSION.apk"
 mkdir -p "$OUT_DIR"
 echo ">> Signing with $KEYSTORE ($KEY_ALIAS). apksigner will ask for the password."
-"$BUILD_TOOLS/apksigner" sign --ks "$KEYSTORE" --ks-key-alias "$KEY_ALIAS" --out "$OUT" "$UNSIGNED"
+# No v1 (JAR) signature and no re-alignment: the signed APK must be F-Droid's exact ZIP plus a
+# v2/v3 signing block, or F-Droid can't copy our signature onto its rebuild. apksigner's
+# defaults add v1 files to META-INF, which shifts every entry and fails verification.
+"$BUILD_TOOLS/apksigner" sign --ks "$KEYSTORE" --ks-key-alias "$KEY_ALIAS" \
+    --v1-signing-enabled false --v2-signing-enabled true --v3-signing-enabled true \
+    --alignment-preserved true \
+    --out "$OUT" "$UNSIGNED"
 "$BUILD_TOOLS/apksigner" verify --print-certs "$OUT" | grep -E 'SHA-256'
 
 echo
