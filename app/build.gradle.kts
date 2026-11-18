@@ -87,4 +87,7 @@ dependencies {
 
     // TOTP
     implementation(libs.kotlin.onetimepassword)
+
+    // FreeDroid
+    implementation("com.github.woheller69:FreeDroidWarn:V1.14")
 }

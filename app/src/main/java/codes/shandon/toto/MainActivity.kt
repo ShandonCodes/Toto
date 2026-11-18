@@ -3,6 +3,7 @@ package codes.shandon.toto
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -35,6 +36,7 @@ import codes.shandon.toto.ui.BackupPasswordDialog
 import codes.shandon.toto.ui.TOTPScreen
 import codes.shandon.toto.ui.theme.TotoTheme
 import kotlinx.coroutines.launch
+import org.woheller69.freeDroidWarn.FreeDroidWarn
 import java.security.GeneralSecurityException
 import java.time.LocalDate
 
@@ -44,6 +46,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FreeDroidWarn.showWarningOnUpgrade(this, Build.VERSION.SDK_INT);
         enableEdgeToEdge()
         // Only on a fresh launch, so rotating doesn't re-offer the same link
         if (savedInstanceState == null) handleOtpAuthIntent(intent)
